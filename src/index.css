@@ -52,18 +52,12 @@
 
 body {
   margin: 0;
+  overflow-y: scroll; /* スクロールバーを常に確保して幅ちらつき防止 */
 }
 
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+  text-align: left;
 }
 
 h1,

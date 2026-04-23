@@ -52,11 +52,13 @@
 
 body {
   margin: 0;
-  overflow-y: scroll; /* スクロールバーを常に確保して幅ちらつき防止 */
+  overflow: hidden; /* bodyはスクロールさせない */
 }
 
 #root {
-  min-height: 100svh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
   text-align: left;
 }
 

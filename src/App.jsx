@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const KEY = "minhaya_v3";
 function loadData() {
@@ -50,9 +50,15 @@ export default function App() {
   const [hayaoshiMode, setHayaoshiMode] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
   const [checkOnly, setCheckOnly] = useState(false);
+  const contentRef = useRef(null);
 
   useEffect(() => { setQuizzes(loadData()); setLoaded(true); }, []);
   useEffect(() => { if (loaded) saveData(quizzes); }, [quizzes, loaded]);
+
+  const switchTab = (k) => {
+    setTab(k);
+    if (contentRef.current) contentRef.current.scrollTop = 0;
+  };
 
   const upd = (id, changes) => setQuizzes(p => p.map(q => q.id === id ? { ...q, ...changes } : q));
   const del = (id) => setQuizzes(p => p.filter(q => q.id !== id));
@@ -530,21 +536,20 @@ export default function App() {
   };
 
   return (
-    <div style={{ fontFamily:"'Noto Sans JP','Hiragino Sans',sans-serif", minHeight:"100vh",
+    <div style={{ fontFamily:"'Noto Sans JP','Hiragino Sans',sans-serif", height:"100%",
       background:"#f1f5f9", maxWidth:430, margin:"0 auto", display:"flex", flexDirection:"column" }}>
       <div style={{ background:"linear-gradient(135deg,#0f172a,#1e3a5f)", color:"white",
-        padding:"14px 16px 10px", position:"sticky", top:0, zIndex:20, boxShadow:"0 2px 12px rgba(0,0,0,0.25)" }}>
+        padding:"14px 16px 10px", flexShrink:0, zIndex:20, boxShadow:"0 2px 12px rgba(0,0,0,0.25)" }}>
         <div style={{ fontSize:17, fontWeight:800 }}>⚡ みんはや問題帳</div>
         <div style={{ fontSize:11, color:"#93c5fd", marginTop:2 }}>{quizzes.length}問収録</div>
       </div>
-      <div style={{ flex:1, overflowY:"auto", padding:12, paddingBottom:76 }}>
+      <div ref={contentRef} style={{ flex:1, overflowY:"auto", padding:12, paddingBottom:76 }}>
         {tab==="list" && renderList()}
         {tab==="add" && renderAdd()}
         {tab==="review" && renderReview()}
         {tab==="stats" && renderStats()}
       </div>
-      <div style={{ position:"fixed", bottom:0, left:"50%", transform:"translateX(-50%)",
-        width:"100%", maxWidth:430, background:"#0f172a", display:"flex",
+      <div style={{ flexShrink:0, background:"#0f172a", display:"flex",
         borderTop:"1px solid #1e3a5f", zIndex:20 }}>
         {[
           { k:"list", i:"📋", l:"一覧" },
@@ -553,7 +558,7 @@ export default function App() {
           { k:"stats", i:"📊",l:"統計" },
         ].map(({k,i,l}) => (
           <button key={k} style={tabBtnS(tab===k)}
-            onClick={()=>{ if(k==="add"){ setForm(blank); setEditId(null); } setTab(k); }}>
+            onClick={()=>{ if(k==="add"){ setForm(blank); setEditId(null); } switchTab(k); }}>
             <span style={{ fontSize:18 }}>{i}</span>
             <span>{l}</span>
           </button>

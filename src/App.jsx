@@ -537,7 +537,8 @@ export default function App() {
 
   return (
     <div style={{ fontFamily:"'Noto Sans JP','Hiragino Sans',sans-serif", height:"100%",
-      background:"#f1f5f9", maxWidth:430, margin:"0 auto", display:"flex", flexDirection:"column" }}>
+      width:"100%", maxWidth:430, margin:"0 auto", background:"#f1f5f9",
+      display:"flex", flexDirection:"column", overflow:"hidden" }}>
       <div style={{ background:"linear-gradient(135deg,#0f172a,#1e3a5f)", color:"white",
         padding:"14px 16px 10px", flexShrink:0, zIndex:20, boxShadow:"0 2px 12px rgba(0,0,0,0.25)" }}>
         <div style={{ fontSize:17, fontWeight:800 }}>⚡ みんはや問題帳</div>

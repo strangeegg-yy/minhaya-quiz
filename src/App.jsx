@@ -50,10 +50,13 @@ export default function App() {
   const [hayaoshiMode, setHayaoshiMode] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
   const [checkOnly, setCheckOnly] = useState(false);
+  const [showCount, setShowCount] = useState(30);
   const contentRef = useRef(null);
 
   useEffect(() => { setQuizzes(loadData()); setLoaded(true); }, []);
   useEffect(() => { if (loaded) saveData(quizzes); }, [quizzes, loaded]);
+  // 検索・フィルタ変更時は表示件数をリセット
+  useEffect(() => { setShowCount(30); }, [search, filterCat, checkOnly]);
 
   const switchTab = (k) => {
     setTab(k);
@@ -298,7 +301,7 @@ export default function App() {
             <div style={{ marginTop:8 }}>問題がありません</div>
             <div style={{ fontSize:12, marginTop:4 }}>ショートカットで解析して取り込みましょう</div>
           </div>
-        : filtered.map(q => (
+        : filtered.slice(0, showCount).map(q => (
           <div key={q.id} style={card}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
               <Badge cat={q.category} />
@@ -328,6 +331,14 @@ export default function App() {
           </div>
         ))
       }
+      {filtered.length > showCount && (
+        <button onClick={()=>setShowCount(c=>c+50)} style={{
+          width:"100%", padding:12, borderRadius:10, fontSize:14, fontWeight:700,
+          background:"white", color:"#0ea5e9", border:"2px solid #0ea5e9",
+          cursor:"pointer", marginBottom:12 }}>
+          もっと見る（残り{filtered.length - showCount}問）
+        </button>
+      )}
     </>
   );
 

@@ -1,8 +1,30 @@
 import { useState, useEffect, useRef } from "react";
 
 const KEY = "minhaya_v3";
+// 過去のバグで発生した重複エントリ・重複IDを掃除する
+function dedupe(list) {
+  const seenIds = new Set();
+  const qaIndex = new Map(); // question+answer -> outの位置
+  const out = [];
+  for (const q of list) {
+    const qa = q.question + "|" + q.answer;
+    if (qaIndex.has(qa)) {
+      // 同一問題は復習履歴が多い方を残す（IDは先勝ち）
+      const i = qaIndex.get(qa);
+      if ((q.reviewCount || 0) > (out[i].reviewCount || 0)) {
+        out[i] = { ...q, id: out[i].id };
+      }
+      continue;
+    }
+    const entry = seenIds.has(String(q.id)) ? { ...q, id: crypto.randomUUID() } : q;
+    seenIds.add(String(entry.id));
+    qaIndex.set(qa, out.length);
+    out.push(entry);
+  }
+  return out;
+}
 function loadData() {
-  try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : []; } catch { return []; }
+  try { const r = localStorage.getItem(KEY); return r ? dedupe(JSON.parse(r)) : []; } catch { return []; }
 }
 function saveData(d) {
   try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {}
@@ -72,27 +94,27 @@ export default function App() {
       const clean = text.replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(clean);
       const items = Array.isArray(parsed) ? parsed : [parsed];
-      let added = 0;
+      // 既存の解答と重複しないものだけを新規作成（IDもここで確定させる）
+      const existing = new Set(quizzes.map(q => q.answer));
+      const newOnes = [];
       for (const p of items) {
-        if (p.question && p.answer) {
-          setQuizzes(prev => {
-            if (prev.some(q => q.answer === p.answer)) return prev;
-            return [{
-              id: Date.now() + Math.random(),
-              category: p.category || "その他",
-              question: p.question,
-              answer: p.answer,
-              reading: p.reading || "",
-              correctRate: p.correctRate != null ? Number(p.correctRate) : null,
-              createdAt: new Date().toISOString(),
-              reviewCount: 0,
-              correctCount: 0,
-            }, ...prev];
+        if (p.question && p.answer && !existing.has(p.answer)) {
+          existing.add(p.answer);
+          newOnes.push({
+            id: crypto.randomUUID(),
+            category: p.category || "その他",
+            question: p.question,
+            answer: p.answer,
+            reading: p.reading || "",
+            correctRate: p.correctRate != null ? Number(p.correctRate) : null,
+            createdAt: new Date().toISOString(),
+            reviewCount: 0,
+            correctCount: 0,
           });
-          added++;
         }
       }
-      setClipMsg(added > 0 ? `✅ ${added}問を追加しました！` : "⚠️ 有効なデータが見つかりません");
+      if (newOnes.length) setQuizzes(prev => [...newOnes, ...prev]);
+      setClipMsg(newOnes.length > 0 ? `✅ ${newOnes.length}問を追加しました！` : "⚠️ 有効なデータが見つかりません");
     } catch (e) {
       setClipMsg(`❌ 失敗: ${e.message}`);
     }
